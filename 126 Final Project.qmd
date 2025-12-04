@@ -1,0 +1,130 @@
+---
+title: "126 Final Project"
+author: "Jayden Gould, Ivan Gladnikov, Hovan (LN)"
+date: "`r Sys.Date()`"
+format: pdf
+editor: visual
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(knitr)
+library(tidyverse)
+library(car)
+library(gridExtra)
+```
+
+### Part 1 - Data Description and Descriptive Statistics
+
+#### PREP. Loading the Dataset
+
+```{r}
+diamonds_raw <- read.csv("Diamonds Prices2022.csv")
+```
+
+#### 1. Select a random sample.
+
+```{r}
+dim(diamonds_raw)
+set.seed(1738)
+
+#Decided on random sample of 1000 observations
+sample_index = sample(nrow(diamonds_raw), 1000, replace = FALSE)
+diamonds <- diamonds_raw[sample_index, ]
+dim(diamonds)
+```
+
+#### 2. Describe all variables.
+
+```{r}
+#Removed Index Column
+diamonds <- select(diamonds, -X)
+
+#Summary and Structure
+summary(diamonds)
+str(diamonds)
+
+#Histograms for Continuous Random Variables
+hist1 <- ggplot(diamonds, aes(x=price)) +
+  geom_histogram(bins = 30, fill = 'lightblue', color = 'black') +
+  theme_minimal() + ggtitle('Distribution of Price')
+
+hist2 <- ggplot(diamonds, aes(x=carat)) +
+  geom_histogram(bins = 30, fill = 'lightgreen', color = 'black') +
+  theme_minimal() + ggtitle('Distribution of Carat')
+
+hist3 <- ggplot(diamonds, aes(x=depth)) +
+  geom_histogram(bins = 30, fill = 'lightpink', color = 'black') +
+  theme_minimal() + ggtitle('Distribution of Depth')
+
+hist4 <- ggplot(diamonds, aes(x=table)) +
+  geom_histogram(bins = 30, fill = 'lightyellow', color = 'black') +
+  theme_minimal() + ggtitle('Distribution of Table')
+
+grid.arrange(hist1, hist2, hist3, hist4, ncol = 2)
+
+#Bar Plots for Categorical Variables
+bar1 <- ggplot(diamonds, aes(x = cut)) + 
+  geom_bar(fill = "steelblue") + 
+  theme_minimal() + ggtitle("Count of Cut")
+
+bar2 <- ggplot(diamonds, aes(x = color)) + 
+  geom_bar(fill = "darkred") + 
+  theme_minimal() + ggtitle("Count of Color")
+
+bar3 <- ggplot(diamonds, aes(x = clarity)) + 
+  geom_bar(fill = "purple") + 
+  theme_minimal() + ggtitle("Count of Clarity")
+
+grid.arrange(bar1, bar2, bar3, ncol = 2)
+```
+
+**Quantitative Variables:**
+
+-   Price
+
+    -   The price of the diamond in US Dollars. This is the target variable.
+
+    -   Distribution: Ranges from \$367 to \$18,768. The mean price is approximately \$3,958. Its distribution is heavily right-skewed, indicating that a lot of the diamonds are cheaper but there is still a long tail of expensive ones.
+
+-   Carat
+
+    -   The physical weight of the diamond.
+
+    -   Ranges from 0.23 to 2.54 carats. The mean weight is about 0.7895 carats. Carat is right-skewed. Most of the diamonds are small but there are a few large ones.
+
+-   Depth
+
+    -   The total depth percentage, calculated by $\frac{z}{mean(x,y)}$. It relates to the diamonds proportions.
+
+    -   It ranges from 54.3% to 68.4%, with a mean of 61.75%. It appears to be roughly normally distributed.
+
+-   Table
+
+    -   The width of the diamond's top facet relative to its widest point.
+
+    -   Ranges from 53% to 73%, with a mean of 57.62%. Most values are clustered between 55-60.
+
+-   Dimensions (x,y,z)
+
+    -   The physical length (x), width (y), and depth (z), measured in millimeters.
+
+**Categorical Variables:**
+
+-   Cut
+
+    -   The quality of a diamond's cut.
+
+    -   Its levels are Fair, Good, Very Good, Premium, and Ideal.
+
+-   Color
+
+    -   The color of the diamond, from J to D. J is the worst and D is the best.
+
+    -   Its levels are D, E, F, G, H, I, and J.
+
+-   Clarity
+
+    -   It is a measurement of how clear the diamond is.
+
+    -   Its levels are I1, SI2, SI2, VS2, VS1, VVS2, VVS1, and IF from worst to best.
