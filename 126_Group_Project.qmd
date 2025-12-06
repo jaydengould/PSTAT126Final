@@ -261,7 +261,7 @@ To correct these violations and validate the model's assumptions, we apply a **l
 
 The model is refitted as $\log(\text{price}) \sim \log(\text{carat})$.
 
-```{r P2Q4 Summary Transformed, fig.height=8, fit.width=10}
+```{r P2Q4 Summary Transformed, fig.height=10, fit.width=10}
 trans_model <- lm(log_price ~ log_carat, data = diamonds_sample)
 summary(trans_model)
 
@@ -301,52 +301,186 @@ Changes:
 - The Coefficient Estimates and RSE are a lot smaller now
 
 ## Question 5: Add other variables and assess improvement
-```{r P2Q5 Models, include=FALSE}
+```{r P2Q5 Models, include=TRUE}
 # Model 1: carat
 model1 <- lm(log_price ~ carat, data = diamonds_sample)
-summary(model1)$adj.r.squared
+paste("Model 1:", summary(model1)$adj.r.squared)
 
 # Model 2: carat + depth
 model2 <- lm(log_price ~ carat + depth, data = diamonds_sample)
-summary(model2)$adj.r.squared
+paste("Model 2:", summary(model2)$adj.r.squared)
 
 # Model 3: carat + depth + table
 model3 <- lm(log_price ~ carat + depth + table, data = diamonds_sample)
-summary(model3)$adj.r.squared
+paste("Model 3:", summary(model3)$adj.r.squared)
 
-# Model 4: carat + depth + table + x
-model4 <- lm(log_price ~ carat + depth + table + x, data = diamonds_sample)
-summary(model4)$adj.r.squared
+# Model 4: carat + depth + table + cut
+model4 <- lm(log_price ~ carat + depth + table + cut, data = diamonds_sample)
+paste("Model 4:", summary(model4)$adj.r.squared)
 
-# Model 5: carat + depth + table + x + y
-model5 <- lm(log_price ~ carat + depth + table + x + y, data = diamonds_sample)
-summary(model5)$adj.r.squared
+# Model 5: carat + depth + table + cut + color
+model5 <- lm(log_price ~ carat + depth + table + cut + color, data = diamonds_sample)
+paste("Model 5:", summary(model5)$adj.r.squared)
 
-# Model 6: carat + depth + table + x + y + z
-model6 <- lm(log_price ~ carat + depth + table + x + y + z, data = diamonds_sample)
-summary(model6)$adj.r.squared
+# Model 6: carat + depth + table + cut + color + clarity
+model6 <- lm(log_price ~ carat + depth + table + cut + color + clarity, data = diamonds_sample)
+paste("Model 6:", summary(model6)$adj.r.squared)
 
-# Model 7: carat + depth + table + x + y + z + cut
-model7 <- lm(log_price ~ carat + depth + table + x + y + z + cut, data = diamonds_sample)
-summary(model7)$adj.r.squared
+# Model 7: carat + depth + table + cut + color + clarity + x
+model7 <- lm(log_price ~ carat + depth + table + cut + color + clarity + x, data = diamonds_sample)
+paste("Model 7:", summary(model7)$adj.r.squared)
 
-# Model 8: carat + depth + table + x + y + z + cut + color
-model8 <- lm(log_price ~ carat + depth + table + x + y + z + cut + color, data = diamonds_sample)
-summary(model8)$adj.r.squared
+# Model 8: carat + depth + table + cut + color + clarity + x + y
+model8 <- lm(log_price ~ carat + depth + table + cut + color + clarity + x + y, data = diamonds_sample)
+paste("Model 8:", summary(model8)$adj.r.squared)
 
-# Model 9: carat + depth + table + x + y + z + cut + color + clarity
-model9 <- lm(log_price ~ carat + depth + table + x + y + z + cut + color + clarity, data = diamonds_sample)
-summary(model9)$adj.r.squared
+# Model 9: carat + depth + table + cut + color + clarity + x + y + z
+model9 <- lm(log_price ~ carat + depth + table + cut + color + clarity + x + y + z, data = diamonds_sample)
+paste("Model 9:", summary(model9)$adj.r.squared)
 
-# Final best model
-best_model <- model9
+# Final best model (from prior comparison)
+best_model <- model8
 
 ```
-Best model includes all of the variables. Each variable that was added to the model increased the Adjusted $R^2$.
+
+The best model includes all of the variables besides 'z'. Each of the other variables that was added to the model increased the Adjusted $R^2$.
 
 ## Question 6: Comments on Part 2
 
 **Comment:**
-The log transformation significantly improved the model. Adding more variables substantially improved the Adjusted $R^2$.
+The log transformation significantly improved the model. Adding more variables substantially improved the Adjusted $R^2$ in every case except when adding 'z'.
 
 # PART 3: Multiple Linear Regression
+
+## Question 1: Best model selection
+
+```{r P3Q1 Best Model}
+# Based on Part 2, our best model includes all variables with log(price)
+best_model <- lm(log_price ~ carat + depth + table + cut + color + clarity + x + y, 
+                 data = diamonds_sample)
+summary(best_model)
+```
+
+Observations from summary:
+- Adjusted R-squared: 0.9836 (explains 98.36% of variance)
+- All remaining predictors are significant
+- Model is highly statistically significant
+
+```{r P3Q1 Backward AIC}
+# Backward elimination using AIC
+backward_aic <- step(best_model, direction = "backward", trace = FALSE)
+summary(backward_aic)
+```
+
+```{r P3Q1 Backward BIC}
+# Backward elimination using BIC criterion
+n <- nrow(diamonds_sample)
+backward_bic <- step(best_model, direction = "backward", k = log(n), trace = FALSE)
+summary(backward_bic)
+```
+
+```{r P3Q1 Stepwise AIC}
+# Stepwise regression using AIC on null model
+null_model <- lm(log_price ~ 1, data = diamonds_sample)
+stepwise_aic <- step(null_model, 
+                     scope = list(lower = null_model, upper = best_model),
+                     direction = "both", trace = FALSE)
+summary(stepwise_aic)
+```
+
+**Observations:**
+- Full model Adjusted R²: 0.9836
+- All model selection methods retain most variables
+- The models explain approximately 98% of variance in log(price)
+
+## Question 2: Detect multicollinearity using VIF
+
+```{r P3Q2 VIF}
+# Calculate VIF for the best model
+vif_values <- vif(best_model)
+print(vif_values)
+
+# Identify bad VIF values (> 10)
+high_vif <- vif_values[vif_values > 10]
+print("Variables with VIF > 10:")
+print(high_vif)
+```
+
+**Multicollinearity Assessment:**
+- x, y, and carat have extremely high VIF values, which signals their multicollinearity
+
+```{r P3Q2 Reduced Model}
+# Reduced Model without x and y
+reduced_model <- lm(log_price ~ carat + depth + table + cut + color + clarity, 
+                    data = diamonds_sample)
+summary(reduced_model)
+
+# VIF for Reduced Model
+vif_reduced <- vif(reduced_model)
+print("VIF values for reduced model:")
+print(vif_reduced)
+```
+
+All VIF values in the reduced model are below 5, indicating no multicollinearity.
+
+## Question 3: Confidence and Prediction Intervals
+
+```{r P3Q3 Intervals}
+# New data point for prediction
+new_observation <- data.frame(
+  carat = 0.7,
+  depth = 61.5,
+  table = 57,
+  cut = "Ideal",
+  color = "G",
+  clarity = "VS2"
+)
+
+# Confidence interval for mean response (log scale)
+ci_mean_log <- predict(reduced_model, newdata = new_observation, 
+                        interval = "confidence", level = 0.95)
+print("95% CI for mean log(price):")
+print(ci_mean_log)
+
+# Transform back to original price scale
+ci_mean_price <- exp(ci_mean_log)
+print("95% CI for mean price ($):")
+print(ci_mean_price)
+
+# Prediction interval for individual response (log scale)
+pi_individual_log <- predict(reduced_model, newdata = new_observation, 
+                             interval = "prediction", level = 0.95)
+print("95% PI for individual log(price):")
+print(pi_individual_log)
+
+# Transform back to original price scale
+pi_individual_price <- exp(pi_individual_log)
+print("95% PI for individual price ($):")
+print(pi_individual_price)
+```
+
+**Explanation:**
+- The confidence interval provides the range for the mean price of all diamonds with these characteristics
+- The prediction interval provides the range for a single diamond's price with these characteristics
+- The prediction interval is wider than the confidence interval, as it accounts for individual variation
+
+## Question 4: Summary Report
+
+This regression analysis successfully developed a predictive model for diamond prices using physical characteristics and quality measures from a sample of 1,000 diamonds.
+
+### Key Findings:
+
+1. **Model Performance**: 
+   - Best model with x and y: Adjusted $R^2$ = 0.9836
+   - Reduced model without x and y: Adjusted $R^2$ = 0.9004
+   - Both models are a good fit
+
+2. **Significant Predictors**:
+   - All variables in best model are statistically significant
+   - We removed 'z' because it brought the Adjusted $R^2$ value down.
+   - Carat is the strongest Predictor
+
+3. **Multicollinearity**:
+   - There was multicollinearity between carat and x and y
+   - VIF values exceeded 600 for x and y
+   - Removing x and y resolves issue while keeping an Adjusted $R^2$ > 0.9
