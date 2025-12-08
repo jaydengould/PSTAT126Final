@@ -128,3 +128,40 @@ grid.arrange(bar1, bar2, bar3, ncol = 2)
     -   It is a measurement of how clear the diamond is.
 
     -   Its levels are I1, SI2, SI2, VS2, VS1, VVS2, VVS1, and IF from worst to best.
+
+
+### 4. Multiple Regression Model
+```{r}
+model <- lm(price ~ carat + depth + table + cut + color + clarity, data=diamonds_raw)
+summary(model)
+```
+**Commentary**
+
+-   Summary() Overview
+
+    -   The adjusted R-squared value is already quite high, sitting at 0.91. However, this is not much of a surprise because we are given roughly 50,000 datalines to work with, which is more than enough for a model like this with few variables. Another interesting thing was that every single variable in the model was statistically significant. 
+    
+
+### Deeper Analysis
+
+-   1-1 Study
+
+    -   Here we will analyze the effect of the variable Clarity on the response variable Price. 
+```{r}
+model2 <- lm(price ~ clarity, data=diamonds_raw)
+summary(model2)
+
+# confidence interval
+confint(model2, level = 0.95)
+
+#prediction interval
+pred_interval <- predict(model2, diamonds_raw, interval = "prediction", level = 0.95)
+head(pred_interval)
+```
+   Summary
+
+    -   The residuals show high swing - plenty of error, which is expected given the low R-squared. It was interesting to see how far the adjusted R-squared dropped, from 0.91 all the way to 0.027. This means that clarity explains roughly 2.7% of the variance of the model. Given how the F statistic is 215 and some clarity p-values (excluding SI1, VS1 and VS2) are statistically significant, overall clarity provides value to the model and should be kept. It makes sense for it to not provide a lot of information, since there's so many variables, but it does provide value still.
+    
+    - The confidence interval is split because there's 7 clarity variables. The intercept was [3640, 4207] meaning we are 95% confident that the intercept is between those two values. Using clarityVs1 [-380, 211] as an example, we are 95% confident that the clarityVs1 variable adds between -$380 and $211 to the value of the diamond.
+    
+    - The predictor interval is just the 95% confidence interval for the target variable price. An interesting note is the inclusion of negative values, which in the real world is not logical, meaning in some place the model is not working correctly. This is because it's testing using only the clarity variable. There is also a notable wide variance. This is obvious when seeing the R-squared being 0.02, so much of the variance is unexplained by clarity alone.
