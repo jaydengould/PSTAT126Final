@@ -44,20 +44,20 @@ Our sample contains the following variables:
 **Response Variable:**
 
 -   price: Price of the diamond in US dollars ranging from \$361 to
-    \$18806. This is our target variable for prediction.
+    \$18806. This is our target variable for prediction. It's very skewed, with a few high outliers affecting the statistics.
 
 **Quantitative Predictor Variables:**
 
--   carat: Weight of the diamond ranging from 0.2 to 3.0 carats.
+-   carat: Weight of the diamond ranging from 0.2 to 3.0 carats. Carat is highly right-skewed, suggesting a few very large diamonds dominate the distribution. This may violate linearity and homoscedasticity assumptions and foreshadows the need for log transformation.
 
 -   depth: Measures how deep the diamond is relative to its width
-    ranging from 43% to 69.5%.
+    ranging from 43% to 69.5%. It's pretty balanced out but still expected to add value to the model.
 
 -   table: Width of the top of the diamond relative to its widest point
-    ranging from 52% to 67%.
+    ranging from 52% to 67%. However, 67% seems to be an outlier judging by the mean and median being 57 and the third quartile being 59.
 
 -   x: Length of the diamond in millimeters ranging from 3.73mm to
-    9.38mm.
+    9.38mm. 
 
 -   y: Width of the diamond in millimeters ranging from 3.71mm to
     9.31mm.
@@ -65,6 +65,8 @@ Our sample contains the following variables:
 -   z: Depth of the diamond in millimeters ranging from 0mm to 5.41mm.
     (A measurement of 0mm is impossible which means that we have to
     remove some observations where measurements are 0mm.
+    
+-   x, y, and z are all relatively balanced - skew-free, avoiding homoscedasticity and the need for log transformation. 
 
 **Categorical Predictor Variables:**
 
@@ -98,7 +100,7 @@ hist(diamonds_sample$z, main = "Z (Depth)",
 
 Comments on their Distributions: - Price and carat are right-skewed -
 Depth seems normal and stable - Table and X,Y,Z have high variability -
-X, Y, Z are slightly right-skewed.
+X, Y, Z are slightly right-skewed. The skewness in price and carat suggests the presence of multiplicative relationships, which motivates the log transformation used later.
 
 ```{r P1Q2 Bar Plots, fig.height=4, fig.width=10}
 # Bar plots for categorical variables
@@ -115,7 +117,7 @@ barplot(table(diamonds_sample$clarity), main = "Clarity",
 Comments on Categorical Variables: Most diamonds have ideal or premium
 cuts. Distribution is fairly even across G, E, F, and H grades with
 fewer diamonds at the extremes (D and J) and I grades. SI1 and VS2 are
-the most common clarity grades, representing mid-range quality.
+the most common clarity grades, representing mid-range quality. 
 
 ## Question 3: Choose variables and determine correlation
 
@@ -221,9 +223,17 @@ round(cor_matrix, 3)
 
 -   Depth-Table: Weak negative correlation.
 
-**ANOVA Results Summary:** All categorical variables tested (cut,
-clarity) show statistically significant relationships with price,
-indicating that mean prices differ across quality categories.
+-   Overall weak correlations is a strong sign that the model will work 
+    efficiently as multicollinearity is avoided here, as well as each variable 
+    being useful to the model in explaining variance. Carat will provide 
+    the most value to the model, so it is a necessity in every case.
+
+
+**ANOVA Results Summary:** All categorical variables tested (cut, clarity) 
+show statistically significant relationships with price,
+indicating that mean prices differ across quality categories. 
+ANOVA confirms all three factors significantly affect price (p < 0.001). 
+The boxplots show monotonic trends, meaning higher quality consistently leads to higher price.
 
 ## Question 4: Multiple linear regression model
 
@@ -236,10 +246,12 @@ summary(model_initial)
 ## Question 5: Comments on Part 1
 
 1.  Price shows a very strong positive correlation with carat. This
-    confirms that the weight of the diamond is a good predictor of
+    confirms that the weight of the diamond is valuable predictor of
     diamond price.
 2.  Both price and carat are highly right-skewed. This suggests that
-    log-transformations will likely improve model assumptions.
+    log-transformations will likely improve model assumptions. It also
+    means that the high-end diamonds will have more variance, being 
+    harder to predict, and the model will likely be less accurate.
 3.  Most diamonds in our sample have Ideal or Premium cuts, G or E
     colors, and SI1 or VS2 clarity grade which shows that our sample
     contains mostly mid to high quality diamonds.
@@ -458,7 +470,9 @@ summary(stepwise_aic)
 variance in log(price) - All selection methods do not retain depth,
 table, and y - AIC and Stepwise AIC retain both x and z while BIC only
 retains x. The models explain approximately 98% of variance in
-log(price).
+log(price). This also hints that x and z are redundant and don't
+provide much value on their own with carat already providing 
+the same information. 
 
 ## Question 2: Detect multicollinearity using VIF
 
@@ -474,7 +488,9 @@ print(high_vif)
 ```
 
 **Multicollinearity Assessment:** - x, y, z, and carat have extremely
-high VIF values, which signals their multicollinearity.
+high VIF values, which signals their multicollinearity. This is why x
+and z were removed by AIC/BIC, taking care of multicollinearity and
+at the same time improving the adjusted R^2.
 
 ```{r P3Q2 Reduced Model}
 # Reduced Model without depth, table, x, y, and z.
@@ -489,7 +505,10 @@ print(vif_reduced)
 ```
 
 All VIF values in the reduced model are below 5, indicating no
-multicollinearity.
+multicollinearity. This was expected from before when analyzing 
+the correlation chart and seeing mostly low correlation between
+variables. The one exception was carat-price, but since the rest
+had low correlation with each other, the overall VIF is still healthy.
 
 ## Question 3: Confidence and Prediction Intervals
 
@@ -535,7 +554,11 @@ interval, as it accounts for individual variation
 
 This regression analysis successfully developed a predictive model for
 diamond prices using physical characteristics and quality measures from
-a sample of 1,000 diamonds.
+a sample of 1,000 diamonds. Our findings include realizing and proving
+that carat is by far the strongest predictor of a diamond's price, and
+that the other variables explain most of the variance that carat amount
+couldn't explain. Overall, the model fits very well and could comfortably
+be used on real diamond data.
 
 ### Key Findings:
 
@@ -544,9 +567,10 @@ a sample of 1,000 diamonds.
         0.9841
     -   Reduced model without depth, table, x, y, and z: Adjusted $R^2$
         = 0.9839
-    -   Both models are a good fit
+    -   Both models are an excellent fit
     -   The reduced model is preferred due to resolved multicollinearity
-        and Stepwise AIC selection.
+        and Stepwise AIC selection. (Unnecessary variables were removed
+        and VIF dropped to a healthy level.)
 2.  **Significant Predictors (in order of importance)**:
     -   Carat (log-transformed): Strongest predictor with a 1% increase
         in carat giving about a 1.7% increase in price.
