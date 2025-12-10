@@ -83,19 +83,19 @@ Our sample contains the following variables:
 par(mfrow = c(3, 3))
 
 hist(diamonds_sample$carat, main = "Carat", 
-     xlab = "Carat", col = "lightblue")
+     xlab = "Carat", col = "blue")
 hist(diamonds_sample$depth, main = "Depth", 
-     xlab = "Depth", col = "lightgreen")
+     xlab = "Depth", col = "green")
 hist(diamonds_sample$table, main = "Table", 
-     xlab = "Table", col = "lightcoral")
+     xlab = "Table", col = "red")
 hist(diamonds_sample$price, main = "Price", 
-     xlab = "Price", col = "lightyellow")
+     xlab = "Price", col = "yellow")
 hist(diamonds_sample$x, main = "X (Length)", 
-     xlab = "X", col = "lightpink")
+     xlab = "X", col = "pink")
 hist(diamonds_sample$y, main = "Y (Width)", 
-     xlab = "Y", col = "lightgray")
+     xlab = "Y", col = "gray")
 hist(diamonds_sample$z, main = "Z (Depth)", 
-     xlab = "Z", col = "lavender")
+     xlab = "Z", col = "purple")
 ```
 
 Comments on their Distributions: - Price and carat are right-skewed -
@@ -107,11 +107,11 @@ X, Y, Z are slightly right-skewed. The skewness in price and carat suggests the 
 par(mfrow = c(1, 3))
 
 barplot(table(diamonds_sample$color), main = "Color", 
-        col = "salmon", las=1, horiz=TRUE)
+        col = "red", las=1, horiz=TRUE)
 barplot(table(diamonds_sample$cut), main = "Cut", 
-        col = "skyblue", las=1, horiz=TRUE)
+        col = "blue", las=1, horiz=TRUE)
 barplot(table(diamonds_sample$clarity), main = "Clarity", 
-        col = "palegreen", las=1, horiz=TRUE)
+        col = "green", las=1, horiz=TRUE)
 ```
 
 Comments on Categorical Variables: Most diamonds have ideal or premium
@@ -171,27 +171,27 @@ par(mfrow = c(3, 4))
 
 # Price vs categorical variables
 boxplot(price ~ cut, data = diamonds_sample, 
-        main = "Price by Cut", las = 2, col = "lightblue")
+        main = "Price by Cut", las = 2, col = "blue")
 boxplot(price ~ clarity, data = diamonds_sample,
-        main = "Price by Clarity", las = 2, col = "lightcoral")
+        main = "Price by Clarity", las = 2, col = "red")
 
 # Carat vs categorical variables
 boxplot(carat ~ cut, data = diamonds_sample,
-        main = "Carat by Cut", las = 2, col = "lightyellow")
+        main = "Carat by Cut", las = 2, col = "yellow")
 boxplot(carat ~ clarity, data = diamonds_sample,
-        main = "Carat by Clarity", las = 2, col = "lavender")
+        main = "Carat by Clarity", las = 2, col = "purple")
 
 # Table vs categorical variables
 boxplot(table ~ cut, data = diamonds_sample,
-        main = "Table by Cut", las = 2, col = "lightgray")
+        main = "Table by Cut", las = 2, col = "gray")
 boxplot(table ~ clarity, data = diamonds_sample,
-        main = "Table by Clarity", las = 2, col = "palegreen")
+        main = "Table by Clarity", las = 2, col = "green")
 
 # Depth vs categorical variables
 boxplot(depth ~ cut, data = diamonds_sample,
-        main = "Depth by Cut", las = 2, col = "skyblue")
+        main = "Depth by Cut", las = 2, col = "orange")
 boxplot(depth ~ clarity, data = diamonds_sample,
-        main = "Depth by Clarity", las = 2, col = "plum")
+        main = "Depth by Clarity", las = 2, col = "pink")
 
 # Interpretation of ANOVA results:
 # If p-value < 0.05: There is a significant relationship (the means differ across groups)
@@ -595,5 +595,5 @@ be used on real diamond data.
 
     -   95% CI for mean price: Provides expected average market value
 
-    -   95% PI for individual price: Accounts for natural variation in
+    -   95% PI for individual price: Accounts for natural variation in 
         individual diamonds
